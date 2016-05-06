@@ -22,6 +22,12 @@
   [self.window makeKeyAndVisible];
   
   NRPollViewController *pollVC = [[NRPollViewController alloc] init];
+  
+//  UIView *view = [[UIView alloc] initWithFrame:CGRectMake(100, 100, 100, 100)];
+//  view.backgroundColor = [UIColor redColor];
+  
+  pollVC.view.backgroundColor = [UIColor whiteColor];
+  
   self.navigationController = [[UINavigationController alloc] initWithRootViewController:pollVC];
   self.window.rootViewController = self.navigationController;
 
