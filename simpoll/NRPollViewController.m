@@ -48,7 +48,7 @@
              action:@selector(myAction) 
    forControlEvents:UIControlEventTouchUpInside];
   
-  [self.view addSubview:button];
+  
   
   // Initialization
   self.displayingPrimary = YES;
@@ -72,6 +72,8 @@
   self.pollView = [[NRPollView alloc] initBelowNavigationBar];
   self.pollView.dataSource = self;
   [self.view  addSubview:self.pollView];
+  // all subviews must go after pollView
+  [self.view addSubview:button];
 }
 
 #pragma mark - <NRPollViewDataSource>
