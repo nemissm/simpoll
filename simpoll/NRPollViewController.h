@@ -9,6 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "NRPollView.h"
 
-@interface NRPollViewController : UIViewController <NRPollViewDataSource>
+@interface NRPollViewController : UIViewController <NRPollViewDataSource, NRPollViewDelegate>
 
 @end

@@ -71,6 +71,7 @@
   // Test poll View
   self.pollView = [[NRPollView alloc] initBelowNavigationBar];
   self.pollView.dataSource = self;
+  self.pollView.delegate = self;
   [self.view  addSubview:self.pollView];
   // all subviews must go after pollView
   [self.view addSubview:button];
@@ -80,6 +81,15 @@
 
 - (NSString *)titleForQuestionInPollView:(NRPollView *)pollView {
   return @"TEST test TEST TEST test TEST TEST test TEST TEST test TEST TEST test TEST";
+}
+
+- (NSUInteger)numberOfAnswersInPollView:(NRPollView *)pollView {
+  return 2 + arc4random_uniform(6);
+}
+
+#pragma mark - <NRPollViewDelegate>
+- (void)pollView:(NRPollView *)pollView clickedAnswerButtonAtIndex:(NSUInteger)index {
+  [self.pollView showResults];
 }
 
 #pragma mark - Other
