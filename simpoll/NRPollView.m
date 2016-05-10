@@ -13,6 +13,10 @@
 
 @property (strong, nonatomic) UIView *questionTitleView;
 @property (strong, nonatomic) UIView *answerButtonsView;
+@property (strong, nonatomic) UIView *answerResultsView;
+@property (assign, nonatomic) NSUInteger numberOfAnswers;
+@property (assign, nonatomic) NSUInteger longestAnswerTitleIndex;
+@property (assign, nonatomic) CGFloat longestAnswerTitleWidth; // For finding longestAnswerTitleIndex
 
 @end
 
@@ -33,14 +37,13 @@ static NSUInteger const buttonHeight = 38;
 static NSUInteger const buttonTitleFontSize = 17;
 static NSUInteger const buttonTitlePaddingLeft = 13;
 
-/*
- // Only override drawRect: if you perform custom drawing.
- // An empty implementation adversely affects performance during animation.
- - (void)drawRect:(CGRect)rect {
- // Drawing code
- }
- */
+static NSUInteger const resultTitlePaddingLeft = 15;
+static CGFloat    const resultTitleFontSize = 14.f;
+static CGFloat    const resultTitleWidthRatio = 0.3f;
+static NSUInteger const resultPaddingBetween = 15;
+static NSUInteger const resultPaddingBottom = 15;
 
+// TODO: init without frame. Constraints on view controller
 - (instancetype)initBelowNavigationBar {
   
   // Create transparent content view
@@ -52,6 +55,8 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
   self = [super initWithFrame:CGRectMake(0, 64, contentViewWidth, contentViewHeight)];
   if (self) {
     self.backgroundColor = [UIColor clearColor];
+    self.longestAnswerTitleIndex = 0;
+    self.longestAnswerTitleWidth = 0;
   }
   return self;
 }
@@ -162,7 +167,8 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
   // Add view with answer buttons
   self.answerButtonsView = [[UIView alloc] init];
   self.answerButtonsView.backgroundColor = [UIColor veryLightGrayColor];
-  [self addSubview:self.answerButtonsView];
+  // answerButtonsView will slide up behind questionTitleView
+  [self insertSubview:self.answerButtonsView belowSubview:self.questionTitleView];
   
   self.answerButtonsView.translatesAutoresizingMaskIntoConstraints = NO;
   
@@ -199,20 +205,64 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
   [self addConstraint:answerButtonsViewLeadingConstraint];
   [self addConstraint:answerButtonsViewTrailingConstraint];
   [self addConstraint:answerButtonsViewTopConstraint];
+  // We will set view height later, when buttons will be placed
   
-  // Add answer buttons
-
-  NSUInteger numberOfAnswers = [self.dataSource numberOfAnswersInPollView:self];
+  // Add view with answer results
+  self.answerResultsView = [[UIView alloc] init];
+  self.answerResultsView.backgroundColor = [UIColor veryLightGrayColor];
+  // answerResultsView will lay behind answerButtonsView
+  [self insertSubview:self.answerResultsView belowSubview:self.answerButtonsView];
+  
+  self.answerResultsView.translatesAutoresizingMaskIntoConstraints = NO;
+  
+  // Constraints
+  
+  // answerResultsView position & width
+  NSLayoutConstraint *answerResultsViewLeadingConstraint =
+    [NSLayoutConstraint constraintWithItem:self.answerResultsView
+                                 attribute:NSLayoutAttributeLeading
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:self
+                                 attribute:NSLayoutAttributeLeading
+                                multiplier:1.0
+                                  constant:0];
+  
+  NSLayoutConstraint *answerResultsViewTrailingConstraint =
+    [NSLayoutConstraint constraintWithItem:self
+                                 attribute:NSLayoutAttributeTrailing
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:self.answerResultsView
+                                 attribute:NSLayoutAttributeTrailing
+                                multiplier:1.0
+                                  constant:0];
+  
+  NSLayoutConstraint *answerResultsViewTopConstraint =
+    [NSLayoutConstraint constraintWithItem:self.answerResultsView
+                                 attribute:NSLayoutAttributeTop
+                                 relatedBy:NSLayoutRelationEqual
+                                    toItem:self.questionTitleView
+                                 attribute:NSLayoutAttributeBottom
+                                multiplier:1.0
+                                  constant:0];
+  
+  [self addConstraint:answerResultsViewLeadingConstraint];
+  [self addConstraint:answerResultsViewTrailingConstraint];
+  [self addConstraint:answerResultsViewTopConstraint];
+  // We will set view height later, when answer result titles will be placed
+  
+  // Get number of answers
+  self.numberOfAnswers = [self.dataSource numberOfAnswersInPollView:self];
   
   // [2,7]
-  if (numberOfAnswers < 2) {
-    numberOfAnswers = 2;
-  } else if (numberOfAnswers > 7) {
-    numberOfAnswers = 7;
+  if (self.numberOfAnswers < 2) {
+    self.numberOfAnswers = 2;
+  } else if (self.numberOfAnswers > 7) {
+    self.numberOfAnswers = 7;
   }
   
-  for (NSUInteger i = 0; i <= numberOfAnswers - 1; i++) {
-    //break;
+  // Add answer buttons & answer result titles
+  for (NSUInteger i = 0; i <= self.numberOfAnswers - 1; i++) {
+    // Answer buttons
     UIButton *answerButton = [self answerButton];
     answerButton.tag = i;
     answerButton.translatesAutoresizingMaskIntoConstraints = NO;
@@ -244,13 +294,13 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
     }
     
     NSLayoutConstraint *answerButtonLeadingConstraint =
-    [NSLayoutConstraint constraintWithItem:answerButton
-                                 attribute:NSLayoutAttributeLeading
-                                 relatedBy:NSLayoutRelationEqual
-                                    toItem:self.answerButtonsView
-                                 attribute:NSLayoutAttributeLeading
-                                multiplier:1.0
-                                  constant:buttonPaddingLeft];
+      [NSLayoutConstraint constraintWithItem:answerButton
+                                   attribute:NSLayoutAttributeLeading
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:self.answerButtonsView
+                                   attribute:NSLayoutAttributeLeading
+                                  multiplier:1.0
+                                    constant:buttonPaddingLeft];
   
     NSLayoutConstraint *answerButtonTrailingConstraint =
       [NSLayoutConstraint constraintWithItem:self.answerButtonsView
@@ -277,7 +327,7 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
     
     // answerButtonsView height
     NSLayoutConstraint *answerButtonsViewBottomConstraint;
-    if (i == numberOfAnswers - 1) {
+    if (i == self.numberOfAnswers - 1) {
       answerButtonsViewBottomConstraint =
         [NSLayoutConstraint constraintWithItem:self.answerButtonsView
                                      attribute:NSLayoutAttributeBottom
@@ -288,10 +338,101 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
                                       constant:buttonPaddingBottom];
       [self.answerButtonsView addConstraint:answerButtonsViewBottomConstraint];
     }
+    
+    // Answer result titles
+    
+    NSString *answerResultTitleString = [self.dataSource pollView:self titleForAnswerAtIndex:i];
+    
+    // Find index of longest title - result bars will be aligned to the longest title
+    CGSize answerResultTitleStringSize = [answerResultTitleString sizeWithAttributes:
+      @{NSFontAttributeName: [UIFont systemFontOfSize:resultTitleFontSize]}];
+    if (answerResultTitleStringSize.width > self.longestAnswerTitleWidth) {
+      self.longestAnswerTitleWidth = answerResultTitleStringSize.width;
+      self.longestAnswerTitleIndex = i;
+    }
+    
+    UILabel *testLabel = [self answerResultTitleLabel:answerResultTitleString];
+    
+    [self.answerResultsView addSubview:testLabel];
+    
+    testLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    // Constraints
+    
+    // Top constraint for the first result title
+    NSLayoutConstraint *answerResultTitleTopConstraint;
+    if (i == 0) {
+      answerResultTitleTopConstraint =
+        [NSLayoutConstraint constraintWithItem:testLabel
+                                     attribute:NSLayoutAttributeTop
+                                     relatedBy:NSLayoutRelationEqual
+                                        toItem:self.answerResultsView
+                                     attribute:NSLayoutAttributeTop
+                                    multiplier:1.0
+                                      constant:0];
+    } else {
+      // Top constraint the other result titles
+      answerResultTitleTopConstraint =
+        [NSLayoutConstraint constraintWithItem:testLabel
+                                     attribute:NSLayoutAttributeTop
+                                     relatedBy:NSLayoutRelationEqual
+                                        toItem:[[self.answerResultsView subviews] objectAtIndex:i - 1]
+                                     attribute:NSLayoutAttributeBottom
+                                    multiplier:1.0
+                                      constant:resultPaddingBetween];
+    }
+    
+    NSLayoutConstraint *answerResultTitleLeadingConstraint =
+      [NSLayoutConstraint constraintWithItem:testLabel
+                                   attribute:NSLayoutAttributeLeading
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:self.answerResultsView
+                                   attribute:NSLayoutAttributeLeading
+                                  multiplier:1.0
+                                    constant:resultTitlePaddingLeft];
+  
+//    NSLayoutConstraint *answerResultTitleTrailingConstraint =
+//      [NSLayoutConstraint constraintWithItem:self.answerButtonsView
+//                                   attribute:NSLayoutAttributeTrailing
+//                                   relatedBy:NSLayoutRelationEqual
+//                                      toItem:testLabel
+//                                   attribute:NSLayoutAttributeTrailing
+//                                  multiplier:1.0
+//                                    constant:buttonPaddingRight];
+
+    // Constraint for max answer title width
+    NSLayoutConstraint *answerResultTitleMaxWidthConstraint =
+      [NSLayoutConstraint constraintWithItem:testLabel
+                                   attribute:NSLayoutAttributeWidth
+                                   relatedBy:NSLayoutRelationLessThanOrEqual
+                                      toItem:self.answerResultsView
+                                   attribute:NSLayoutAttributeWidth
+                                  multiplier:resultTitleWidthRatio
+                                    constant:0];
+    
+    [self.answerResultsView addConstraint:answerResultTitleTopConstraint];
+    [self.answerResultsView addConstraint:answerResultTitleLeadingConstraint];
+    [self.answerResultsView addConstraint:answerResultTitleMaxWidthConstraint];
+    //[answerButton addConstraint:answerButtonHeightConstraint];
+    
+    // TODO: add note after all answers
+    // answerResultsView height
+    if (i == self.numberOfAnswers - 1) {
+      NSLayoutConstraint *answerButtonsViewBottomConstraint =
+        [NSLayoutConstraint constraintWithItem:self.answerResultsView
+                                     attribute:NSLayoutAttributeBottom
+                                     relatedBy:NSLayoutRelationEqual
+                                        toItem:testLabel
+                                     attribute:NSLayoutAttributeBottom
+                                    multiplier:1.0
+                                      constant:resultPaddingBottom];
+      [self.answerResultsView addConstraint:answerButtonsViewBottomConstraint];
+    }
   }
 }
 
 // TODO: Add title
+// TODO: Maybe move to category
 - (UIButton *)answerButton {
   
   UIButton *answerButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -301,9 +442,9 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
   // One pixel stretching zone
   // Faster performance as described in docs:
   // developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/#//apple_ref/occ/instm/UIImage/resizableImageWithCapInsets:
-  CGFloat answerButtonMiddle = (answerButtonNormalImage.size.width - 1) / 2;
-  CGFloat answerButtonLeftEdgeInset = floorf(answerButtonMiddle);
-  CGFloat answerButtonRightEdgeInset = ceilf(answerButtonMiddle);
+  CGFloat answerButtonImageMiddle = (answerButtonNormalImage.size.width - 1) / 2;
+  CGFloat answerButtonLeftEdgeInset = floorf(answerButtonImageMiddle);
+  CGFloat answerButtonRightEdgeInset = ceilf(answerButtonImageMiddle);
   
   UIEdgeInsets answerButtonImageEdgeInsets =
     UIEdgeInsetsMake(0, answerButtonLeftEdgeInset, 0, answerButtonRightEdgeInset);
@@ -320,6 +461,17 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
   return answerButton;
 }
 
+- (UILabel *)answerResultTitleLabel:(NSString *)title {
+  UILabel *answerResultTitleLabel = [[UILabel alloc] init];
+  answerResultTitleLabel.font = [UIFont systemFontOfSize:resultTitleFontSize];
+  answerResultTitleLabel.textColor = [UIColor blackColor];
+  answerResultTitleLabel.text = title;
+  answerResultTitleLabel.backgroundColor = [UIColor redColor];
+  [answerResultTitleLabel sizeToFit];
+  
+  return answerResultTitleLabel;
+}
+
 - (void)buttonClicked:(UIButton *)answerButton {
   NSLog(@"Pressed %ld", (long)answerButton.tag);
   NSLog(@"self.answerButtonsView.frame: %@", NSStringFromCGRect(self.answerButtonsView.frame));
@@ -331,6 +483,9 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
 
 - (void)showResults {
   
+  // Add view with results
+  
+  // Hide answerButtonsView
   CGRect answerButtonsViewHiddenFrame = self.answerButtonsView.frame;
   answerButtonsViewHiddenFrame.origin.y =
     answerButtonsViewHiddenFrame.origin.y - answerButtonsViewHiddenFrame.size.height;
@@ -347,7 +502,7 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
 }
 
 - (void)didMoveToSuperview {
-    [self reload];
+  [self reload];
 }
 
 @end

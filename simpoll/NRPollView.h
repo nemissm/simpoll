@@ -29,8 +29,8 @@
 // Answers. Minimal answer number - 2, maximum - 7
 
 - (NSUInteger)numberOfAnswersInPollView:(NRPollView *)pollView;
-//- (NSString *)pollView:(NRPollView *)pollView titileForAnswerAtIndex:(NSUInteger)index;
-//- (NSUInteger)pollView:(NRPollView *)pollView numberOfExistingVotesAtIndex:(NSUInteger)index;
+- (NSString *)pollView:(NRPollView *)pollView titleForAnswerAtIndex:(NSUInteger)index;
+//- (NSUInteger)pollView:(NRPollView *)pollView numberOfVotesAtIndex:(NSUInteger)index;
 @end
 
 @protocol NRPollViewDelegate <NSObject>
