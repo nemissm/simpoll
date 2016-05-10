@@ -9,6 +9,8 @@
 #import "NRPollViewController.h"
 #import "NRAnswerVotes.h"
 
+#import <MBProgressHUD.h>
+
 @interface NRPollViewController ()
 
 @property (strong, nonatomic) NRPollView *pollView;
@@ -73,20 +75,22 @@
 
 - (void)pollView:(NRPollView *)pollView clickedAnswerButtonAtIndex:(NSUInteger)index {
   
-  [[UIApplication sharedApplication] beginIgnoringInteractionEvents];
+  [MBProgressHUD showHUDAddedTo:self.view animated:YES];
+  //[[UIApplication sharedApplication] beginIgnoringInteractionEvents];
   
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
     [self.pollView showResults];
     
-    [[UIApplication sharedApplication] endIgnoringInteractionEvents];
+    CATransition *fadeTextAnimation = [CATransition animation];
+    fadeTextAnimation.duration = 0.3;
+    fadeTextAnimation.type = kCATransitionFade;
+    [self.navigationController.navigationBar.layer addAnimation:fadeTextAnimation
+                                                         forKey:@"fadeTextAnimation"];
+    self.navigationItem.title = @"После";
+    
+    //[[UIApplication sharedApplication] endIgnoringInteractionEvents];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
   });
-  
-  CATransition *fadeTextAnimation = [CATransition animation];
-  fadeTextAnimation.duration = 0.3;
-  fadeTextAnimation.type = kCATransitionFade;
-  [self.navigationController.navigationBar.layer addAnimation:fadeTextAnimation
-                                                       forKey:@"fadeTextAnimation"];
-  self.navigationItem.title = @"После";
 }
 
 @end
