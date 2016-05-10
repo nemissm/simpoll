@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "NRAnswerVotes.h"
 
 @protocol NRPollViewDataSource;
 @protocol NRPollViewDelegate;
@@ -29,8 +30,8 @@
 // Answers. Minimal answer number - 2, maximum - 7
 
 - (NSUInteger)numberOfAnswersInPollView:(NRPollView *)pollView;
-- (NSString *)pollView:(NRPollView *)pollView titleForAnswerAtIndex:(NSUInteger)index;
-//- (NSUInteger)pollView:(NRPollView *)pollView numberOfVotesAtIndex:(NSUInteger)index;
+- (NSString *)pollView:(NRPollView *)pollView answerTitleAtIndex:(NSUInteger)index;
+- (NRAnswerVotes *)pollView:(NRPollView *)pollView answerVotesAtIndex:(NSUInteger)index;
 @end
 
 @protocol NRPollViewDelegate <NSObject>

@@ -16,12 +16,13 @@
 @property (strong, nonatomic) UIView *answerResultsView;
 @property (assign, nonatomic) NSUInteger numberOfAnswers;
 @property (assign, nonatomic) NSUInteger longestAnswerTitleIndex;
-@property (assign, nonatomic) CGFloat longestAnswerTitleWidth; // For finding longestAnswerTitleIndex
+@property (strong, nonatomic) NSMutableArray *answerVotesArray;
 
 @end
 
 @implementation NRPollView
 
+// TODO: Replace to CGFloat type where needed
 static NSUInteger const questionTitlePaddingLeft = 16;
 static NSUInteger const questionTitlePaddingRight = 16;
 static NSUInteger const questionTitlePaddingTop = 15;
@@ -39,7 +40,13 @@ static NSUInteger const buttonTitlePaddingLeft = 13;
 
 static NSUInteger const resultTitlePaddingLeft = 15;
 static CGFloat    const resultTitleFontSize = 14.f;
-static CGFloat    const resultTitleWidthRatio = 0.3f;
+static CGFloat    const resultTitleMaxWidthRatio = 0.3f;
+
+static CGFloat    const votesBarPaddingLeft = 10.f;
+static CGFloat    const votesBarMaxWidthRatio = 0.3f;
+static CGFloat    const votesLabelPaddingLeft = 8.f;
+static CGFloat    const votesLabelPaddingRight = 15.f;
+
 static NSUInteger const resultPaddingBetween = 15;
 static NSUInteger const resultPaddingBottom = 15;
 
@@ -56,7 +63,6 @@ static NSUInteger const resultPaddingBottom = 15;
   if (self) {
     self.backgroundColor = [UIColor clearColor];
     self.longestAnswerTitleIndex = 0;
-    self.longestAnswerTitleWidth = 0;
   }
   return self;
 }
@@ -260,6 +266,9 @@ static NSUInteger const resultPaddingBottom = 15;
     self.numberOfAnswers = 7;
   }
   
+  // For finding longestAnswerTitleIndex
+  CGFloat longestAnswerTitleWidth = 0;
+  
   // Add answer buttons & answer result titles
   for (NSUInteger i = 0; i <= self.numberOfAnswers - 1; i++) {
     // Answer buttons
@@ -341,19 +350,21 @@ static NSUInteger const resultPaddingBottom = 15;
     
     // Answer result titles
     
-    NSString *answerResultTitleString = [self.dataSource pollView:self titleForAnswerAtIndex:i];
+    NSString *answerResultTitleString = [self.dataSource pollView:self answerTitleAtIndex:i];
     
     // Find index of longest title - result bars will be aligned to the longest title
     CGSize answerResultTitleStringSize = [answerResultTitleString sizeWithAttributes:
       @{NSFontAttributeName: [UIFont systemFontOfSize:resultTitleFontSize]}];
-    if (answerResultTitleStringSize.width > self.longestAnswerTitleWidth) {
-      self.longestAnswerTitleWidth = answerResultTitleStringSize.width;
+    if (answerResultTitleStringSize.width > longestAnswerTitleWidth) {
+      longestAnswerTitleWidth = answerResultTitleStringSize.width;
       self.longestAnswerTitleIndex = i;
     }
+    // TODO: Rename testLabel
+    UILabel *testLabel = [self answerResultLabel:answerResultTitleString
+                                           color:[UIColor blackColor]];
     
-    UILabel *testLabel = [self answerResultTitleLabel:answerResultTitleString];
-    
-    [self.answerResultsView addSubview:testLabel];
+    // Directly specify index, as we need access to titles for creating constraints for other elements
+    [self.answerResultsView insertSubview:testLabel atIndex:i];
     
     testLabel.translatesAutoresizingMaskIntoConstraints = NO;
     
@@ -371,7 +382,7 @@ static NSUInteger const resultPaddingBottom = 15;
                                     multiplier:1.0
                                       constant:0];
     } else {
-      // Top constraint the other result titles
+      // Top constraint the other result titles. Link with previous
       answerResultTitleTopConstraint =
         [NSLayoutConstraint constraintWithItem:testLabel
                                      attribute:NSLayoutAttributeTop
@@ -390,15 +401,6 @@ static NSUInteger const resultPaddingBottom = 15;
                                    attribute:NSLayoutAttributeLeading
                                   multiplier:1.0
                                     constant:resultTitlePaddingLeft];
-  
-//    NSLayoutConstraint *answerResultTitleTrailingConstraint =
-//      [NSLayoutConstraint constraintWithItem:self.answerButtonsView
-//                                   attribute:NSLayoutAttributeTrailing
-//                                   relatedBy:NSLayoutRelationEqual
-//                                      toItem:testLabel
-//                                   attribute:NSLayoutAttributeTrailing
-//                                  multiplier:1.0
-//                                    constant:buttonPaddingRight];
 
     // Constraint for max answer title width
     NSLayoutConstraint *answerResultTitleMaxWidthConstraint =
@@ -407,13 +409,12 @@ static NSUInteger const resultPaddingBottom = 15;
                                    relatedBy:NSLayoutRelationLessThanOrEqual
                                       toItem:self.answerResultsView
                                    attribute:NSLayoutAttributeWidth
-                                  multiplier:resultTitleWidthRatio
+                                  multiplier:resultTitleMaxWidthRatio
                                     constant:0];
     
     [self.answerResultsView addConstraint:answerResultTitleTopConstraint];
     [self.answerResultsView addConstraint:answerResultTitleLeadingConstraint];
     [self.answerResultsView addConstraint:answerResultTitleMaxWidthConstraint];
-    //[answerButton addConstraint:answerButtonHeightConstraint];
     
     // TODO: add note after all answers
     // answerResultsView height
@@ -429,6 +430,133 @@ static NSUInteger const resultPaddingBottom = 15;
       [self.answerResultsView addConstraint:answerButtonsViewBottomConstraint];
     }
   }
+}
+
+- (void)showResults {
+  
+  // Add votes bar & count
+  for (NSUInteger i = 0; i <= self.numberOfAnswers - 1; i++) {
+    // Get answer votes from delegate
+    NRAnswerVotes *answerVotes = [self.dataSource pollView:self answerVotesAtIndex:i];
+    
+    // Add votes bar
+    UIView *answerVotesBar = [[UIView alloc] init];
+    answerVotesBar.backgroundColor = [UIColor darkGrayColor];
+    
+    [self.answerResultsView addSubview:answerVotesBar];
+    
+    answerVotesBar.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    // Constraints
+    
+    // Link with answer titles top position
+    NSLayoutConstraint *answerVotesBarTopConstraint =
+        [NSLayoutConstraint constraintWithItem:answerVotesBar
+                                     attribute:NSLayoutAttributeTop
+                                     relatedBy:NSLayoutRelationEqual
+                                        toItem:[[self.answerResultsView subviews] objectAtIndex:i]
+                                     attribute:NSLayoutAttributeTop
+                                    multiplier:1.0
+                                      constant:0];
+    
+    // Link with longest answer title
+    NSLayoutConstraint *answerVotesBarLeadingConstraint =
+      [NSLayoutConstraint constraintWithItem:answerVotesBar
+                                   attribute:NSLayoutAttributeLeading
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:[[self.answerResultsView subviews] objectAtIndex:self.longestAnswerTitleIndex]
+                                   attribute:NSLayoutAttributeTrailing
+                                  multiplier:1.0
+                                    constant:votesBarPaddingLeft];
+  
+    NSLayoutConstraint *answerVotesBarHeightConstraint =
+      [NSLayoutConstraint constraintWithItem:answerVotesBar
+                                   attribute:NSLayoutAttributeHeight
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:[[self.answerResultsView subviews] objectAtIndex:i]
+                                   attribute:NSLayoutAttributeHeight
+                                  multiplier:1.0
+                                    constant:0];
+
+    // Constraint for answerVotesBar width
+    NSLayoutConstraint *answerVotesBarWidthConstraint =
+      [NSLayoutConstraint constraintWithItem:answerVotesBar
+                                   attribute:NSLayoutAttributeWidth
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:self.answerResultsView
+                                   attribute:NSLayoutAttributeWidth
+                                  multiplier:(votesBarMaxWidthRatio * answerVotes.share)
+                                    constant:0];
+    
+    [self.answerResultsView addConstraint:answerVotesBarTopConstraint];
+    [self.answerResultsView addConstraint:answerVotesBarLeadingConstraint];
+    [self.answerResultsView addConstraint:answerVotesBarHeightConstraint];
+    [self.answerResultsView addConstraint:answerVotesBarWidthConstraint];
+    
+    // Add votes label
+    
+    NSString *answerVotesString = [NSString stringWithFormat:@"%ld (%.f%%)",
+      (unsigned long)answerVotes.count, roundf((answerVotes.share * 100))];
+    
+    UILabel *answerVotesLabel = [self answerResultLabel:answerVotesString
+                                                  color:[UIColor darkGrayColor]];
+    
+    [self.answerResultsView addSubview:answerVotesLabel];
+    
+    answerVotesLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    // Constraints
+    
+    // Link with answer titles top position
+    NSLayoutConstraint *answerVotesLabelTopConstraint =
+        [NSLayoutConstraint constraintWithItem:answerVotesLabel
+                                     attribute:NSLayoutAttributeTop
+                                     relatedBy:NSLayoutRelationEqual
+                                        toItem:[[self.answerResultsView subviews] objectAtIndex:i]
+                                     attribute:NSLayoutAttributeTop
+                                    multiplier:1.0
+                                      constant:0];
+    
+    // Link with answerVotesBar
+    NSLayoutConstraint *answerVotesLabelLeadingConstraint =
+      [NSLayoutConstraint constraintWithItem:answerVotesLabel
+                                   attribute:NSLayoutAttributeLeading
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:answerVotesBar
+                                   attribute:NSLayoutAttributeTrailing
+                                  multiplier:1.0
+                                    constant:votesLabelPaddingLeft];
+  
+
+    // The rest of space is for answerVotesLabel width
+    NSLayoutConstraint *answerVotesLabelTrailingConstraint =
+      [NSLayoutConstraint constraintWithItem:self.answerResultsView
+                                   attribute:NSLayoutAttributeTrailing
+                                   relatedBy:NSLayoutRelationGreaterThanOrEqual
+                                      toItem:answerVotesLabel
+                                   attribute:NSLayoutAttributeTrailing
+                                  multiplier:1.0
+                                    constant:votesLabelPaddingRight];
+    
+    [self.answerResultsView addConstraint:answerVotesLabelTopConstraint];
+    [self.answerResultsView addConstraint:answerVotesLabelLeadingConstraint];
+    [self.answerResultsView addConstraint:answerVotesLabelTrailingConstraint];
+  }
+  
+  // Hide answerButtonsView
+  CGRect answerButtonsViewHiddenFrame = self.answerButtonsView.frame;
+  answerButtonsViewHiddenFrame.origin.y =
+    answerButtonsViewHiddenFrame.origin.y - answerButtonsViewHiddenFrame.size.height;
+  
+  [UIView animateWithDuration:0.3
+                        delay:0
+                      options:UIViewAnimationOptionCurveEaseOut
+    animations:^{
+      self.answerButtonsView.frame = answerButtonsViewHiddenFrame;
+    }
+    completion:^(BOOL finished) {
+
+    }];
 }
 
 // TODO: Add title
@@ -461,11 +589,12 @@ static NSUInteger const resultPaddingBottom = 15;
   return answerButton;
 }
 
-- (UILabel *)answerResultTitleLabel:(NSString *)title {
+- (UILabel *)answerResultLabel:(NSString *)text  color:(UIColor *)color {
+  
   UILabel *answerResultTitleLabel = [[UILabel alloc] init];
   answerResultTitleLabel.font = [UIFont systemFontOfSize:resultTitleFontSize];
-  answerResultTitleLabel.textColor = [UIColor blackColor];
-  answerResultTitleLabel.text = title;
+  answerResultTitleLabel.textColor = color;
+  answerResultTitleLabel.text = text;
   answerResultTitleLabel.backgroundColor = [UIColor redColor];
   [answerResultTitleLabel sizeToFit];
   
@@ -479,26 +608,6 @@ static NSUInteger const resultPaddingBottom = 15;
     return;
   
   [self.delegate pollView:self clickedAnswerButtonAtIndex:answerButton.tag];
-}
-
-- (void)showResults {
-  
-  // Add view with results
-  
-  // Hide answerButtonsView
-  CGRect answerButtonsViewHiddenFrame = self.answerButtonsView.frame;
-  answerButtonsViewHiddenFrame.origin.y =
-    answerButtonsViewHiddenFrame.origin.y - answerButtonsViewHiddenFrame.size.height;
-  
-  [UIView animateWithDuration:0.3
-                        delay:0
-                      options:UIViewAnimationOptionCurveEaseOut
-    animations:^{
-      self.answerButtonsView.frame = answerButtonsViewHiddenFrame;
-    }
-    completion:^(BOOL finished) {
-
-    }];
 }
 
 - (void)didMoveToSuperview {

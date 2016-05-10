@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		BCAED18F1CDDA401004A5831 /* NRPollView.m in Sources */ = {isa = PBXBuildFile; fileRef = BCAED18E1CDDA401004A5831 /* NRPollView.m */; };
 		BCCAD40B1CDEC750002751EC /* UIColor+NRAppConfig.m in Sources */ = {isa = PBXBuildFile; fileRef = BCCAD40A1CDEC750002751EC /* UIColor+NRAppConfig.m */; };
+		BCF1FF231CE1DB8E00916EE5 /* NRAnswerVotes.m in Sources */ = {isa = PBXBuildFile; fileRef = BCF1FF221CE1DB8E00916EE5 /* NRAnswerVotes.m */; };
 		BCFE89DB1CDC74DF00C6BC79 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFE89DA1CDC74DF00C6BC79 /* main.m */; };
 		BCFE89DE1CDC74DF00C6BC79 /* NRAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = BCFE89DD1CDC74DF00C6BC79 /* NRAppDelegate.m */; };
 		BCFE89E61CDC74DF00C6BC79 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BCFE89E51CDC74DF00C6BC79 /* Assets.xcassets */; };
@@ -21,6 +22,8 @@
 		BCAED18E1CDDA401004A5831 /* NRPollView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NRPollView.m; sourceTree = "<group>"; };
 		BCCAD4091CDEC750002751EC /* UIColor+NRAppConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIColor+NRAppConfig.h"; sourceTree = "<group>"; };
 		BCCAD40A1CDEC750002751EC /* UIColor+NRAppConfig.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIColor+NRAppConfig.m"; sourceTree = "<group>"; };
+		BCF1FF211CE1DB8E00916EE5 /* NRAnswerVotes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NRAnswerVotes.h; sourceTree = "<group>"; };
+		BCF1FF221CE1DB8E00916EE5 /* NRAnswerVotes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NRAnswerVotes.m; sourceTree = "<group>"; };
 		BCFE89D61CDC74DF00C6BC79 /* simpoll.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = simpoll.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BCFE89DA1CDC74DF00C6BC79 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		BCFE89DC1CDC74DF00C6BC79 /* NRAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NRAppDelegate.h; sourceTree = "<group>"; };
@@ -73,6 +76,15 @@
 			name = Config;
 			sourceTree = "<group>";
 		};
+		BCF1FF201CE1DB1F00916EE5 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				BCF1FF211CE1DB8E00916EE5 /* NRAnswerVotes.h */,
+				BCF1FF221CE1DB8E00916EE5 /* NRAnswerVotes.m */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
 		BCFE89CD1CDC74DE00C6BC79 = {
 			isa = PBXGroup;
 			children = (
@@ -93,6 +105,7 @@
 			isa = PBXGroup;
 			children = (
 				BCCAD4081CDEC6C3002751EC /* Config */,
+				BCF1FF201CE1DB1F00916EE5 /* Model */,
 				BCAED18C1CDDA345004A5831 /* View */,
 				BCAED18B1CDDA332004A5831 /* Controller */,
 				BCFE89E51CDC74DF00C6BC79 /* Assets.xcassets */,
@@ -182,6 +195,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BCCAD40B1CDEC750002751EC /* UIColor+NRAppConfig.m in Sources */,
+				BCF1FF231CE1DB8E00916EE5 /* NRAnswerVotes.m in Sources */,
 				BCFE89DE1CDC74DF00C6BC79 /* NRAppDelegate.m in Sources */,
 				BCAED18F1CDDA401004A5831 /* NRPollView.m in Sources */,
 				BCFE89F21CDC7EA800C6BC79 /* NRPollViewController.m in Sources */,
