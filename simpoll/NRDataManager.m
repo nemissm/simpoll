@@ -2,9 +2,25 @@
 //  NRDataManager.m
 //  simpoll
 //
-//  Created by Mikhail Naryshkin on 11/05/16.
-//  Copyright © 2016 NERPA. All rights reserved.
+//  Copyright (c) 2016 Mikhail Naryshkin <nemissm@gmail.com>
 //
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 
 #import "NRDataManager.h"
 #import "NRAnswerVotes.h"
@@ -99,10 +115,10 @@ static NSInteger const delayInSeconds = 2;
         ]
     ];
     
+    // Is not nesessary in current realization
     for (NSArray *answerVotesArray in _answersVotesArray) {
       [self calculateShareForQuestionAnswersWithVotesArray:answerVotesArray];
     }
-    
   }
   return self;
 }
@@ -131,6 +147,10 @@ static NSInteger const delayInSeconds = 2;
   return [self.answersTitlesArray objectAtIndex:index];
 }
 
+- (NSArray *)getAnswerVotesForQuestionAtIndex:(NSUInteger)index {
+  return [self.answersVotesArray objectAtIndex:index];
+}
+
 - (void)voteForAnswerAtIndex:(NSUInteger)answerIndex
              questionAtIndex:(NSUInteger)questionIndex
                   completion:(void(^)(NSArray *answerVotesArray))completion {
@@ -141,7 +161,7 @@ static NSInteger const delayInSeconds = 2;
   
   [self calculateShareForQuestionAnswersWithVotesArray:answerVotesArray];
   
-  // Simulate request
+  // Simulate server request delay
   dispatch_time_t popTime = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delayInSeconds * NSEC_PER_SEC));
   dispatch_after(popTime, dispatch_get_main_queue(), ^{
     if (completion) {
