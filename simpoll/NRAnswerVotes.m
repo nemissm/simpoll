@@ -20,8 +20,18 @@
   return self;
 }
 
++ (NRAnswerVotes *)answerVotesWithIndex:(NSUInteger)index count:(NSUInteger)count {
+  return [[self alloc] initWithIndex:index count:count];
+}
+
 - (void)calculateShareWithTotalCount:(NSUInteger)totalCount {
   self.share = (CGFloat)self.count / totalCount;
 }
 
+- (void)vote {
+  self.count++;
+}
+
 @end
+
+//UIColor

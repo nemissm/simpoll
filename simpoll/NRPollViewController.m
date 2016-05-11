@@ -8,14 +8,19 @@
 
 #import "NRPollViewController.h"
 #import "NRAnswerVotes.h"
+#import "NRDataManager.h"
 
 #import <MBProgressHUD.h>
 
 @interface NRPollViewController ()
 
+@property (strong, nonatomic) NRDataManager *dataManager;
 @property (strong, nonatomic) NRPollView *pollView;
+
+@property (assign, nonatomic) NSUInteger questionIndex;
+@property (strong, nonatomic) NSString *questionTitle;
 @property (strong, nonatomic) NSArray *answerTitlesArray;
-@property (strong, nonatomic) NSMutableArray *answerVotesArray;
+@property (strong, nonatomic) NSArray *answerVotesArray;
 
 @end
 
@@ -27,7 +32,7 @@
   
   [super viewDidLoad];
   self.navigationItem.title = @"До";
-  
+  /*
   // Test data
   self.answerTitlesArray = @[@"Short", @"Of", @"1"];
   
@@ -45,6 +50,14 @@
   for (NRAnswerVotes *answerVotes in self.answerVotesArray) {
     [answerVotes calculateShareWithTotalCount:totalCount];
   }
+  */
+  
+  self.questionIndex = 1;
+  // Data manager;
+  self.dataManager = [NRDataManager sharedManager];
+  
+  // Get data
+  [self loadData];
   
   // Initialize poll view
   self.pollView = [[NRPollView alloc] initBelowNavigationBar];
@@ -53,14 +66,21 @@
   [self.view  addSubview:self.pollView];
 }
 
+#pragma mark - API Interaction
+
+- (void)loadData {
+  self.questionTitle = [self.dataManager getTitleForQuestionAtIndex:self.questionIndex];
+  self.answerTitlesArray = [self.dataManager getAnswerTitlesForQuestionAtIndex:self.questionIndex];
+}
+
 #pragma mark - <NRPollViewDataSource>
 
 - (NSString *)titleForQuestionInPollView:(NRPollView *)pollView {
-  return @"TEST test TEST TEST test TEST TEST test TEST TEST test TEST TEST test TEST";
+  return self.questionTitle;
 }
 
 - (NSUInteger)numberOfAnswersInPollView:(NRPollView *)pollView {
-  return 3;
+  return [self.answerTitlesArray count];
 }
 
 - (NSString *)pollView:(NRPollView *)pollView answerTitleAtIndex:(NSUInteger)index {
@@ -76,21 +96,24 @@
 - (void)pollView:(NRPollView *)pollView clickedAnswerButtonAtIndex:(NSUInteger)index {
   
   [MBProgressHUD showHUDAddedTo:self.view animated:YES];
-  //[[UIApplication sharedApplication] beginIgnoringInteractionEvents];
   
-  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    [self.pollView showResults];
+  [self.dataManager voteForAnswerAtIndex:index
+                         questionAtIndex:self.questionIndex
+    completion:^(NSArray *answerVotesArray) {
+      self.answerVotesArray = answerVotesArray;
+      [self.pollView showResults];
     
-    CATransition *fadeTextAnimation = [CATransition animation];
-    fadeTextAnimation.duration = 0.3;
-    fadeTextAnimation.type = kCATransitionFade;
-    [self.navigationController.navigationBar.layer addAnimation:fadeTextAnimation
-                                                         forKey:@"fadeTextAnimation"];
-    self.navigationItem.title = @"После";
-    
-    //[[UIApplication sharedApplication] endIgnoringInteractionEvents];
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
-  });
+      CATransition *fadeTextAnimation = [CATransition animation];
+      fadeTextAnimation.duration = 0.3;
+      fadeTextAnimation.type = kCATransitionFade;
+      [self.navigationController.navigationBar.layer addAnimation:fadeTextAnimation
+                                                           forKey:@"fadeTextAnimation"];
+      self.navigationItem.title = @"После";
+      
+      //[[UIApplication sharedApplication] endIgnoringInteractionEvents];
+      [MBProgressHUD hideHUDForView:self.view animated:YES];
+      
+    }];
 }
 
 @end

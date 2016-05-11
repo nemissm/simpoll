@@ -19,5 +19,7 @@
 @property (assign, nonatomic) CGFloat share;
 
 - (instancetype)initWithIndex:(NSUInteger)index count:(NSUInteger)count;
++ (NRAnswerVotes *)answerVotesWithIndex:(NSUInteger)index count:(NSUInteger)count;
 - (void)calculateShareWithTotalCount:(NSUInteger)totalCount;
+- (void)vote;
 @end
