@@ -79,7 +79,7 @@
 				BCFE89F01CDC7EA800C6BC79 /* NRPollViewController.h */,
 				BCFE89F11CDC7EA800C6BC79 /* NRPollViewController.m */,
 			);
-			name = Controller;
+			path = Controller;
 			sourceTree = "<group>";
 		};
 		BCAED18C1CDDA345004A5831 /* View */ = {
@@ -89,7 +89,7 @@
 				BCAED18D1CDDA401004A5831 /* NRPollView.h */,
 				BCAED18E1CDDA401004A5831 /* NRPollView.m */,
 			);
-			name = View;
+			path = View;
 			sourceTree = "<group>";
 		};
 		BCCAD4081CDEC6C3002751EC /* Config */ = {
@@ -98,7 +98,7 @@
 				BCCAD4091CDEC750002751EC /* UIColor+NRAppConfig.h */,
 				BCCAD40A1CDEC750002751EC /* UIColor+NRAppConfig.m */,
 			);
-			name = Config;
+			path = Config;
 			sourceTree = "<group>";
 		};
 		BCF1FF201CE1DB1F00916EE5 /* Model */ = {
@@ -109,16 +109,16 @@
 				BCD0265D1CE2C0F8000A7502 /* NRDataManager.h */,
 				BCD0265E1CE2C0F8000A7502 /* NRDataManager.m */,
 			);
-			name = Model;
+			path = Model;
 			sourceTree = "<group>";
 		};
 		BCFE89CD1CDC74DE00C6BC79 = {
 			isa = PBXGroup;
 			children = (
-				BCFE89D81CDC74DF00C6BC79 /* simpoll */,
-				BCFE89D71CDC74DF00C6BC79 /* Products */,
-				12928601C874A46E95642BAA /* Pods */,
 				52CB6CFF966740E8D6FA373F /* Frameworks */,
+				12928601C874A46E95642BAA /* Pods */,
+				BCFE89D71CDC74DF00C6BC79 /* Products */,
+				BCFE89D81CDC74DF00C6BC79 /* simpoll */,
 			);
 			sourceTree = "<group>";
 		};
@@ -134,12 +134,12 @@
 			isa = PBXGroup;
 			children = (
 				BCCAD4081CDEC6C3002751EC /* Config */,
-				BCF1FF201CE1DB1F00916EE5 /* Model */,
-				BCAED18C1CDDA345004A5831 /* View */,
 				BCAED18B1CDDA332004A5831 /* Controller */,
+				BCF1FF201CE1DB1F00916EE5 /* Model */,
+				BCFE89D91CDC74DF00C6BC79 /* Supporting Files */,
+				BCAED18C1CDDA345004A5831 /* View */,
 				BCFE89E51CDC74DF00C6BC79 /* Assets.xcassets */,
 				BCFE89EA1CDC74DF00C6BC79 /* Info.plist */,
-				BCFE89D91CDC74DF00C6BC79 /* Supporting Files */,
 			);
 			path = simpoll;
 			sourceTree = "<group>";
@@ -149,7 +149,7 @@
 			children = (
 				BCFE89DA1CDC74DF00C6BC79 /* main.m */,
 			);
-			name = "Supporting Files";
+			path = "Supporting Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -293,6 +293,7 @@
 				BCFE89E81CDC74DF00C6BC79 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			path = .;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
